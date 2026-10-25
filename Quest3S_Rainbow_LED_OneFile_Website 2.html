@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10051f">
+<title>Quest 3S Rainbow LED</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font-family:Arial,sans-serif;color:#fff;background:radial-gradient(circle at top,#48206c,#10051f 70%)}main{width:min(600px,100%);padding:30px;text-align:center;background:#160d25;border:1px solid #b66aff;border-radius:25px;box-shadow:0 0 30px #a855f755}.logo{font-size:65px}h1{font-size:28px}p{color:#ddd0ef;line-height:1.6}button{width:100%;min-height:75px;padding:18px;border:0;border-radius:16px;color:white;background:linear-gradient(100deg,#7c3aed,#c026d3,#2563eb);font-size:20px;font-weight:bold;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:3px solid white;outline-offset:4px}#status{min-height:24px;color:#d8b4fe}.warning{margin-top:20px;padding:15px;text-align:left;border:1px solid #f59e0b;border-radius:12px;color:#ffe5ad;font-size:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<main>
+<div class="logo" aria-hidden="true">🌈</div>
+<h1>QUEST 3S RAINBOW LED</h1>
+<p>Download the experimental rainbow LED script.</p>
+<button id="download">⬇ DOWNLOAD RAINBOW FILE</button>
+<p id="status" role="status">Ready to download.</p>
+<div class="warning"><b>Important:</b> This script is experimental and not verified for Quest 3S. Downloading it does not install it or grant system access. The physical charging LED may not support rainbow control.</div>
+</main>
+<script>
+const script = `#!/system/bin/sh
+# Experimental Quest rainbow LED script.
+# Quest 3S compatibility is not verified.
+RED_LED="/sys/class/leds/red/brightness"
+GREEN_LED="/sys/class/leds/green/brightness"
+BLUE_LED="/sys/class/leds/blue/brightness"
+for p in "$RED_LED" "$GREEN_LED" "$BLUE_LED"; do
+  if [ ! -e "$p" ]; then
+    echo "LED path not found: $p"
+    echo "Unsupported configuration. No changes made."
+    exit 1
+  fi
+done
+set_rgb() {
+  echo "$1" > "$RED_LED" || exit 1
+  echo "$2" > "$GREEN_LED" || exit 1
+  echo "$3" > "$BLUE_LED" || exit 1
+}
+while true; do
+  for g in $(seq 0 5 255); do set_rgb 255 "$g" 0; sleep 0.04; done
+  for r in $(seq 255 -5 0); do set_rgb "$r" 255 0; sleep 0.04; done
+  for b in $(seq 0 5 255); do set_rgb 0 255 "$b"; sleep 0.04; done
+  for g in $(seq 255 -5 0); do set_rgb 0 "$g" 255; sleep 0.04; done
+  for r in $(seq 0 5 255); do set_rgb "$r" 0 255; sleep 0.04; done
+  for b in $(seq 255 -5 0); do set_rgb 255 0 "$b"; sleep 0.04; done
+done
+`;
+document.getElementById('download').addEventListener('click', () => {
+  try {
+    const blob = new Blob([script], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Quest3S_Rainbow_LED_Experimental.sh';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    document.getElementById('status').textContent = 'Download requested. Check your browser downloads.';
+  } catch (e) {
+    document.getElementById('status').textContent = 'Download failed in this browser.';
+  }
+});
+</script>
+</body>
+</html>
